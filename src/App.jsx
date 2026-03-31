@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Globe, Clock, Calendar, RotateCcw, Plus, X, Search, Trash2, Sun, MapPin, ChevronDown, ChevronUp, LayoutGrid, List, Pencil, AlarmClock, MinusCircle, BellRing, ChevronRight, Check, Menu, Combine, Settings, Moon, Monitor, Bookmark, Save, FolderOpen, Play, Users, Languages, Crown, CheckCircle } from 'lucide-react';
 import { AdMob, BannerAdSize, BannerAdPosition } from '@capacitor-community/admob';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 // === 다국어 UI 사전 ===
 const UI = {
@@ -276,7 +277,18 @@ export default function App() {
   const [isAppConfigModalOpen, setIsAppConfigModalOpen] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+   const requestNotificationPermission = async () => {
+      try {
+        const { display } = await LocalNotifications.requestPermissions();
+        if (display !== 'granted') {
+          console.warn('알림 권한이 거부되었습니다.');
+        }
+      } catch (e) {
+        console.error('권한 요청 중 오류 발생:', e);
+      }
+    };
+    requestNotificationPermission();
+ const mq = window.matchMedia('(prefers-color-scheme: dark)');
     setSystemIsDark(mq.matches);
     const listener = (e) => setSystemIsDark(e.matches);
     mq.addEventListener('change', listener);
@@ -590,7 +602,45 @@ React.useEffect(() => {
   const openAddAlarmModal = () => { setEditingAlarmId(null); setNewAlarmCityId(baseCityId); setNewAlarmDatetime(getLocalDatetimeString(realTime, baseCity.tz)); setNewAlarmLabel(t('globalAlarmDefault')); setNewAlarmSound('radar'); setIsAddAlarmModalOpen(true); };
   const openEditAlarmModal = (alarm) => { setEditingAlarmId(alarm.id); setNewAlarmCityId(alarm.cityId); setNewAlarmDatetime(alarm.targetDatetimeLocal); setNewAlarmLabel(alarm.label); setNewAlarmSound(alarm.soundId || 'radar'); setIsAddAlarmModalOpen(true); };
 
-  const toggleAlarm = (id) => { setAlarms(alarms.map(a => a.id === id ? { ...a, isEnabled: !a.isEnabled } : a)); };
+  const toggleAlarm = async (id) => {
+    const targetAlarm = alarms.find(a => a.id === id);
+    if (!targetAlarm) return;
+
+    const newIsEnabled = !targetAlarm.isEnabled;
+
+    // React UI 업데이트 (스위치 켜짐/꺼짐 시각적 처리)
+    setAlarms(alarms.map(a => a.id === id ? { ...a, isEnabled: newIsEnabled } : a));
+
+    // 실제 네이티브 기기 알람 스케줄링 연동
+    if (newIsEnabled) {
+      // targetAlarm의 시간 값을 Date 객체로 변환
+      // (작성하신 데이터 구조에 맞춰 targetAlarm.time 또는 datetime 값을 사용)
+      const fireDate = new Date(targetAlarm.time || targetAlarm.datetime); 
+      
+      try {
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title: "TimeAlign 알람",
+              body: targetAlarm.label || "설정하신 알람 시간입니다.",
+              id: id, // id는 정수형이어야 합니다. (필요시 parseInt(id) 사용)
+              schedule: { at: fireDate }, 
+              sound: targetAlarm.sound || "alarm_sound.wav",
+            }
+          ]
+        });
+      } catch (e) {
+         console.error('알람 스케줄 예약 실패:', e);
+      }
+    } else {
+      // 스위치를 끄면 기기 자체에 예약된 알람도 취소
+      try {
+        await LocalNotifications.cancel({ notifications: [{ id: id }] });
+      } catch (e) {
+         console.error('알람 취소 실패:', e);
+      }
+    }
+  };
   const deleteAlarm = (id) => { setAlarms(alarms.filter(a => a.id !== id)); };
   const playPreviewSound = (soundId) => { setNewAlarmSound(soundId); };
 
