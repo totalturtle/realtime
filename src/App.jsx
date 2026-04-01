@@ -287,16 +287,6 @@ export default function App() {
       } catch (e) {
         console.error('권한 요청 중 오류 발생:', e);
       }
-      try {
-        await LocalNotifications.createChannel({
-          id: 'timealign_alarm_v2',
-          name: 'TimeAlign Alarm',
-          importance: 5,
-          sound: 'alarm',
-          vibration: true,
-          visibility: 1,
-        });
-      } catch (e) {}
     };
     requestNotificationPermission();
  const mq = window.matchMedia('(prefers-color-scheme: dark)');
