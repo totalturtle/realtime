@@ -627,7 +627,10 @@ React.useEffect(() => {
       }
     }
   };
-  const deleteAlarm = (id) => { setAlarms(alarms.filter(a => a.id !== id)); };
+  const deleteAlarm = async (id) => {
+    try { await LocalNotifications.cancel({ notifications: [{ id: parseInt(id, 10) }] }); } catch (e) {}
+    setAlarms(alarms.filter(a => a.id !== id));
+  };
   const playPreviewSound = (soundId) => { setNewAlarmSound(soundId); };
 
   const scheduleNotification = async (alarmId, alarmData) => {
@@ -652,7 +655,7 @@ React.useEffect(() => {
     const city = ALL_CITIES.find(c => c.id === newAlarmCityId);
     const absDate = getZonedDateTime(newAlarmDatetime, city.tz);
     const alarmData = { cityId: newAlarmCityId, targetDatetimeLocal: newAlarmDatetime, timestamp: absDate.getTime(), label: newAlarmLabel || t('globalAlarmDefault'), soundId: newAlarmSound, isEnabled: true };
-    const alarmId = editingAlarmId || Date.now().toString();
+    const alarmId = editingAlarmId || String(Math.floor(Math.random() * 2000000000));
     if (editingAlarmId) {
       try { await LocalNotifications.cancel({ notifications: [{ id: parseInt(editingAlarmId, 10) }] }); } catch (e) {}
       setAlarms(alarms.map(a => a.id === editingAlarmId ? { ...a, ...alarmData } : a));
