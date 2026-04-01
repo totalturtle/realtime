@@ -275,23 +275,18 @@ export default function App() {
   const [systemIsDark, setSystemIsDark] = useState(false);
   const [appLang, setAppLang] = useState('system');
   const [isAppConfigModalOpen, setIsAppConfigModalOpen] = useState(false);
+  const [alarmPermissionDenied, setAlarmPermissionDenied] = useState(false);
 
   useEffect(() => {
     const requestNotificationPermission = async () => {
       try {
         const { display } = await LocalNotifications.requestPermissions();
         if (display !== 'granted') {
-          console.warn('알림 권한이 거부되었습니다.');
+          setAlarmPermissionDenied(true);
         }
       } catch (e) {
         console.error('권한 요청 중 오류 발생:', e);
       }
-      try {
-        const { exactAlarm } = await LocalNotifications.checkPermissions();
-        if (exactAlarm === 'prompt' || exactAlarm === 'denied') {
-          await LocalNotifications.requestPermissions();
-        }
-      } catch (e) {}
     };
     requestNotificationPermission();
  const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -952,6 +947,14 @@ React.useEffect(() => {
             </div>
           </div>
           <main className={`flex-1 overflow-y-auto ${!isPro ? 'pb-[130px]' : 'pb-[90px]'} ${isDark ? 'bg-black' : 'bg-white'}`}>
+            {alarmPermissionDenied && (
+              <div className="mx-4 mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-2">
+                <BellRing size={16} className="text-red-500 mt-0.5 shrink-0" />
+                <p className={`text-xs font-medium leading-relaxed ${isDark ? 'text-red-400' : 'text-red-700'}`}>
+                  {currentLang === 'ko' ? '알림 권한이 거부되어 알람이 울리지 않습니다. 기기 설정 > 앱 > TimeAlign > 알림에서 권한을 허용해주세요.' : currentLang === 'ja' ? '通知権限が拒否されているため、アラームが鳴りません。設定 > アプリ > TimeAlign > 通知で権限を許可してください。' : 'Notification permission denied. Alarms will not ring. Please enable it in Settings > Apps > TimeAlign > Notifications.'}
+                </p>
+              </div>
+            )}
             {alarms.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-3"><AlarmClock size={48} className="opacity-50" /><p>{t('noAlarms')}</p></div>
             ) : (
