@@ -114,7 +114,7 @@ const ALL_CITIES = [
   { id: 'guangzhou', name: { ko: '광저우', en: 'Guangzhou', ja: '広州' }, country: { ko: '중국', en: 'China', ja: '中国' }, tz: 'Asia/Shanghai', flag: '🇨🇳' },
   { id: 'shenzhen', name: { ko: '선전', en: 'Shenzhen', ja: '深セン' }, country: { ko: '중국', en: 'China', ja: '中国' }, tz: 'Asia/Shanghai', flag: '🇨🇳' },
   { id: 'hongkong', name: { ko: '홍콩', en: 'Hong Kong', ja: '香港' }, country: { ko: '홍콩', en: 'Hong Kong', ja: '香港' }, tz: 'Asia/Hong_Kong', flag: '🇭🇰' },
-  { id: 'macau', name: { ko: '마카오', en: '마카오', ja: 'マカオ' }, country: { ko: '마카오', en: 'Macau', ja: 'マカオ' }, tz: 'Asia/Macau', flag: '🇲🇴' },
+  { id: 'macau', name: { ko: '마카오', en: 'Macau', ja: 'マカオ' }, country: { ko: '마카오', en: 'Macau', ja: 'マカオ' }, tz: 'Asia/Macau', flag: '🇲🇴' },
   { id: 'taipei', name: { ko: '타이베이', en: 'Taipei', ja: '台北' }, country: { ko: '대만', en: 'Taiwan', ja: '台湾' }, tz: 'Asia/Taipei', flag: '🇹🇼' },
   { id: 'bangkok', name: { ko: '방콕', en: 'Bangkok', ja: 'バンコク' }, country: { ko: '태국', en: 'Thailand', ja: 'タイ' }, tz: 'Asia/Bangkok', flag: '🇹🇭' },
   { id: 'singapore', name: { ko: '싱가포르', en: 'Singapore', ja: 'シンガポール' }, country: { ko: '싱가포르', en: 'Singapore', ja: 'シンガポール' }, tz: 'Asia/Singapore', flag: '🇸🇬' },
@@ -166,7 +166,7 @@ const ALL_CITIES = [
   { id: 'buenos_aires', name: { ko: '부에노스아이레스', en: 'Buenos Aires', ja: 'ブエノスアイレス' }, country: { ko: '아르헨티나', en: 'Argentina', ja: 'アルゼンチン' }, tz: 'America/Argentina/Buenos_Aires', flag: '🇦🇷' },
   { id: 'santiago', name: { ko: '산티아고', en: 'Santiago', ja: 'サンティアゴ' }, country: { ko: '칠레', en: 'Chile', ja: 'チリ' }, tz: 'America/Santiago', flag: '🇨🇱' },
   { id: 'bogota', name: { ko: '보고타', en: 'Bogota', ja: 'ボゴタ' }, country: { ko: '콜롬비아', en: 'Colombia', ja: 'コロンビア' }, tz: 'America/Bogota', flag: '🇨🇴' },
-  { id: 'lima', name: { ko: '리마', en: 'Lima', ja: 'リ마' }, country: { ko: '페루', en: 'Peru', ja: 'ペルー' }, tz: 'America/Lima', flag: '🇵🇪' },
+  { id: 'lima', name: { ko: '리마', en: 'Lima', ja: 'リマ' }, country: { ko: '페루', en: 'Peru', ja: 'ペルー' }, tz: 'America/Lima', flag: '🇵🇪' },
   { id: 'caracas', name: { ko: '카라카스', en: 'Caracas', ja: 'カラカス' }, country: { ko: '베네수엘라', en: 'Venezuela', ja: 'ベネズエラ' }, tz: 'America/Caracas', flag: '🇻🇪' },
 
   // --- 유럽 (Europe) ---
@@ -178,7 +178,7 @@ const ALL_CITIES = [
   { id: 'amsterdam', name: { ko: '암스테르담', en: 'Amsterdam', ja: 'アムステルダム' }, country: { ko: '네덜란드', en: 'Netherlands', ja: 'オランダ' }, tz: 'Europe/Amsterdam', flag: '🇳🇱' },
   { id: 'zurich', name: { ko: '취리히', en: 'Zurich', ja: 'チューリッヒ' }, country: { ko: '스위스', en: 'Switzerland', ja: 'スイス' }, tz: 'Europe/Zurich', flag: '🇨🇭' },
   { id: 'geneva', name: { ko: '제네바', en: 'Geneva', ja: 'ジュネーブ' }, country: { ko: '스위스', en: 'Switzerland', ja: 'スイス' }, tz: 'Europe/Zurich', flag: '🇨🇭' },
-  { id: 'vienna', name: { ko: '빈', en: 'Vienna', ja: 'ウィーン' }, country: { ko: '오스트리아', en: 'Austria', ja: 'オースト리아' }, tz: 'Europe/Vienna', flag: '🇦🇹' },
+  { id: 'vienna', name: { ko: '빈', en: 'Vienna', ja: 'ウィーン' }, country: { ko: '오스트리아', en: 'Austria', ja: 'オーストリア' }, tz: 'Europe/Vienna', flag: '🇦🇹' },
   { id: 'prague', name: { ko: '프라하', en: 'Prague', ja: 'プラハ' }, country: { ko: '체코', en: 'Czechia', ja: 'チェコ' }, tz: 'Europe/Prague', flag: '🇨🇿' },
   { id: 'warsaw', name: { ko: '바르샤바', en: 'Warsaw', ja: 'ワルシャワ' }, country: { ko: '폴란드', en: 'Poland', ja: 'ポーランド' }, tz: 'Europe/Warsaw', flag: '🇵🇱' },
   { id: 'budapest', name: { ko: '부다페스트', en: 'Budapest', ja: 'ブダペスト' }, country: { ko: '헝가리', en: 'Hungary', ja: 'ハンガリー' }, tz: 'Europe/Budapest', flag: '🇭🇺' },
@@ -191,8 +191,8 @@ const ALL_CITIES = [
   { id: 'helsinki', name: { ko: '헬싱키', en: 'Helsinki', ja: 'ヘルシンキ' }, country: { ko: '핀란드', en: 'Finland', ja: 'フィンランド' }, tz: 'Europe/Helsinki', flag: '🇫🇮' },
   { id: 'lisbon', name: { ko: '리스본', en: 'Lisbon', ja: 'リスボン' }, country: { ko: '포르투갈', en: 'Portugal', ja: 'ポルトガル' }, tz: 'Europe/Lisbon', flag: '🇵🇹' },
   { id: 'kyiv', name: { ko: '키이우', en: 'Kyiv', ja: 'キーウ' }, country: { ko: '우크라이나', en: 'Ukraine', ja: 'ウクライナ' }, tz: 'Europe/Kyiv', flag: '🇺🇦' },
-  { id: 'bucharest', name: { ko: '부쿠레슈티', en: 'Bucharest', ja: 'ブカレスト' }, country: { ko: '루마니아', en: 'Romania', ja: 'ルーマ니아' }, tz: 'Europe/Bucharest', flag: '🇷🇴' },
-  { id: 'moscow', name: { ko: '모스크바', en: 'Moscow', ja: 'モ스크ワ' }, country: { ko: '러시아', en: 'Russia', ja: 'ロシア' }, tz: 'Europe/Moscow', flag: '🇷🇺' },
+  { id: 'bucharest', name: { ko: '부쿠레슈티', en: 'Bucharest', ja: 'ブカレスト' }, country: { ko: '루마니아', en: 'Romania', ja: 'ルーマニア' }, tz: 'Europe/Bucharest', flag: '🇷🇴' },
+  { id: 'moscow', name: { ko: '모스크바', en: 'Moscow', ja: 'モスクワ' }, country: { ko: '러시아', en: 'Russia', ja: 'ロシア' }, tz: 'Europe/Moscow', flag: '🇷🇺' },
   { id: 'istanbul', name: { ko: '이스탄불', en: 'Istanbul', ja: 'イスタンブール' }, country: { ko: '튀르키예', en: 'Turkey', ja: 'トルコ' }, tz: 'Europe/Istanbul', flag: '🇹🇷' },
 
   // --- 오세아니아 (Oceania) ---
@@ -468,7 +468,7 @@ React.useEffect(() => {
   const handleGridClick = () => { if (!isPro) { setPaywallReason('premium'); return; } setViewMode('grid'); };
   const handleAddAlarmClick = () => { if (!isPro && alarms.length >= 2) { setPaywallReason('alarm'); return; } openAddAlarmModal(); };
   const handleCriteriaSelect = (val) => { if (!isPro && val !== 'flexible') { setPaywallReason('premium'); return; } setMeetingCriteria(val); };
-  const handleSoundSelect = (sound, index) => { if (!isPro && index >= 2) { setPaywallReason('premium'); return; } playPreviewSound(sound.id); };
+  const handleSoundSelect = (sound, index) => { if (!isPro && index >= 2) { setPaywallReason('premium'); return; } playPreviewSound(sound.id); setIsSoundSelectModalOpen(false); };
 
   const filteredCities = ALL_CITIES.filter(city => {
     const query = searchQuery.toLowerCase();
@@ -615,7 +615,7 @@ React.useEffect(() => {
     if (newIsEnabled) {
       // targetAlarm의 시간 값을 Date 객체로 변환
       // (작성하신 데이터 구조에 맞춰 targetAlarm.time 또는 datetime 값을 사용)
-      const fireDate = new Date(targetAlarm.time || targetAlarm.datetime); 
+      const fireDate = new Date(targetAlarm.timestamp);
       
       try {
         await LocalNotifications.schedule({
@@ -623,7 +623,7 @@ React.useEffect(() => {
             {
               title: "TimeAlign 알람",
               body: targetAlarm.label || "설정하신 알람 시간입니다.",
-              id: id, // id는 정수형이어야 합니다. (필요시 parseInt(id) 사용)
+              id: parseInt(id, 10),
               schedule: { at: fireDate }, 
               sound: targetAlarm.sound || "alarm_sound.wav",
             }
@@ -635,7 +635,7 @@ React.useEffect(() => {
     } else {
       // 스위치를 끄면 기기 자체에 예약된 알람도 취소
       try {
-        await LocalNotifications.cancel({ notifications: [{ id: id }] });
+        await LocalNotifications.cancel({ notifications: [{ id: parseInt(id, 10) }] });
       } catch (e) {
          console.error('알람 취소 실패:', e);
       }
@@ -722,7 +722,7 @@ React.useEffect(() => {
                   </svg>
                 </div>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
-                  {t('globalTime')} TEST 2
+                  {t('globalTime')}
                 </span>
               </h1>
               <div className="flex items-center gap-1.5 text-sm text-slate-100 bg-slate-700/80 hover:bg-slate-600 px-3 py-2 rounded-xl transition-colors border border-slate-600">
