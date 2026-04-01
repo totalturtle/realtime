@@ -277,7 +277,7 @@ export default function App() {
   const [isAppConfigModalOpen, setIsAppConfigModalOpen] = useState(false);
 
   useEffect(() => {
-   const requestNotificationPermission = async () => {
+    const requestNotificationPermission = async () => {
       try {
         const { display } = await LocalNotifications.requestPermissions();
         if (display !== 'granted') {
@@ -286,6 +286,12 @@ export default function App() {
       } catch (e) {
         console.error('권한 요청 중 오류 발생:', e);
       }
+      try {
+        const { exactAlarm } = await LocalNotifications.checkPermissions();
+        if (exactAlarm === 'prompt' || exactAlarm === 'denied') {
+          await LocalNotifications.requestPermissions();
+        }
+      } catch (e) {}
     };
     requestNotificationPermission();
  const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -611,44 +617,49 @@ React.useEffect(() => {
     // React UI 업데이트 (스위치 켜짐/꺼짐 시각적 처리)
     setAlarms(alarms.map(a => a.id === id ? { ...a, isEnabled: newIsEnabled } : a));
 
-    // 실제 네이티브 기기 알람 스케줄링 연동
     if (newIsEnabled) {
-      // targetAlarm의 시간 값을 Date 객체로 변환
-      // (작성하신 데이터 구조에 맞춰 targetAlarm.time 또는 datetime 값을 사용)
-      const fireDate = new Date(targetAlarm.timestamp);
-      
-      try {
-        await LocalNotifications.schedule({
-          notifications: [
-            {
-              title: "TimeAlign 알람",
-              body: targetAlarm.label || "설정하신 알람 시간입니다.",
-              id: parseInt(id, 10),
-              schedule: { at: fireDate }, 
-              sound: targetAlarm.sound || "alarm_sound.wav",
-            }
-          ]
-        });
-      } catch (e) {
-         console.error('알람 스케줄 예약 실패:', e);
-      }
+      await scheduleNotification(id, targetAlarm);
     } else {
-      // 스위치를 끄면 기기 자체에 예약된 알람도 취소
       try {
         await LocalNotifications.cancel({ notifications: [{ id: parseInt(id, 10) }] });
       } catch (e) {
-         console.error('알람 취소 실패:', e);
+        console.error('알람 취소 실패:', e);
       }
     }
   };
   const deleteAlarm = (id) => { setAlarms(alarms.filter(a => a.id !== id)); };
   const playPreviewSound = (soundId) => { setNewAlarmSound(soundId); };
 
-  const handleSaveNewAlarm = () => {
+  const scheduleNotification = async (alarmId, alarmData) => {
+    const fireDate = new Date(alarmData.timestamp);
+    if (fireDate <= new Date()) return;
+    try {
+      await LocalNotifications.schedule({
+        notifications: [{
+          title: "TimeAlign 알람",
+          body: alarmData.label || "설정하신 알람 시간입니다.",
+          id: parseInt(alarmId, 10),
+          schedule: { at: fireDate, allowWhileIdle: true },
+          sound: null,
+        }]
+      });
+    } catch (e) {
+      console.error('알람 스케줄 예약 실패:', e);
+    }
+  };
+
+  const handleSaveNewAlarm = async () => {
     const city = ALL_CITIES.find(c => c.id === newAlarmCityId);
     const absDate = getZonedDateTime(newAlarmDatetime, city.tz);
     const alarmData = { cityId: newAlarmCityId, targetDatetimeLocal: newAlarmDatetime, timestamp: absDate.getTime(), label: newAlarmLabel || t('globalAlarmDefault'), soundId: newAlarmSound, isEnabled: true };
-    setAlarms(editingAlarmId ? alarms.map(a => a.id === editingAlarmId ? { ...a, ...alarmData } : a) : [...alarms, { id: Date.now().toString(), ...alarmData }]);
+    const alarmId = editingAlarmId || Date.now().toString();
+    if (editingAlarmId) {
+      try { await LocalNotifications.cancel({ notifications: [{ id: parseInt(editingAlarmId, 10) }] }); } catch (e) {}
+      setAlarms(alarms.map(a => a.id === editingAlarmId ? { ...a, ...alarmData } : a));
+    } else {
+      setAlarms(prev => [...prev, { id: alarmId, ...alarmData }]);
+    }
+    await scheduleNotification(alarmId, alarmData);
     setIsAddAlarmModalOpen(false); setEditingAlarmId(null);
   };
 
