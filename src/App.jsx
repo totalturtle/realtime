@@ -289,9 +289,10 @@ export default function App() {
       }
       try {
         await LocalNotifications.createChannel({
-          id: 'timealign_alarm',
+          id: 'timealign_alarm_v2',
           name: 'TimeAlign Alarm',
           importance: 5,
+          sound: 'alarm',
           vibration: true,
           visibility: 1,
         });
@@ -647,7 +648,7 @@ React.useEffect(() => {
           body: alarmData.label || "설정하신 알람 시간입니다.",
           id: parseInt(alarmId, 10),
           schedule: { at: fireDate, allowWhileIdle: true },
-          channelId: 'timealign_alarm',
+          channelId: 'timealign_alarm_v2',
         }]
       });
     } catch (e) {
