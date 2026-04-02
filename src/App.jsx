@@ -436,7 +436,7 @@ React.useEffect(() => {
         await AdMob.initialize({});
 
         const options = {
-          adId: 'ca-app-pub-3940256099942544/6300978111', 
+          adId: 'ca-app-pub-4580352399728296/1029384558', 
           adSize: BannerAdSize.ADAPTIVE_BANNER,
           position: BannerAdPosition.BOTTOM_CENTER,
           margin: 0,
