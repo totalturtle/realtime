@@ -98,7 +98,12 @@ const UI = {
   buyPro: { ko: '평생 소장', en: 'Lifetime Access', ja: '永久アクセス' },
   restore: { ko: '구매 내역 복원', en: 'Restore Purchase', ja: '購入の復元' },
   alreadyPro: { ko: 'Pro 버전 사용 중입니다 ✨', en: 'You are using Pro version ✨', ja: 'Proバージョンをご利用中です ✨' },
-  unlockAll: { ko: '모든 프리미엄 기능 해제', en: 'Unlock all premium features', ja: 'すべてのプレミアム機能を解放' }
+  unlockAll: { ko: '모든 프리미엄 기능 해제', en: 'Unlock all premium features', ja: 'すべてのプレミアム機能を解放' },
+  redeemCode: { ko: '리딤 코드', en: 'Redeem Code', ja: 'リディームコード' },
+  redeemPlaceholder: { ko: '코드를 입력하세요', en: 'Enter code', ja: 'コードを入力' },
+  redeemBtn: { ko: '적용', en: 'Apply', ja: '適用' },
+  redeemSuccess: { ko: 'Pro로 전환되었습니다!', en: 'Upgraded to Pro!', ja: 'Proにアップグレードされました！' },
+  redeemFail: { ko: '유효하지 않은 코드입니다.', en: 'Invalid code.', ja: '無効なコードです。' }
 };
 
 // === 도시 데이터 ===
@@ -271,11 +276,13 @@ export default function App() {
   const [paywallReason, setPaywallReason] = useState(null);
   const [proPrice, setProPrice] = useState(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [redeemInput, setRedeemInput] = useState('');
+  const [redeemMessage, setRedeemMessage] = useState(null);
 
   // === 앱 설정 상태 ===
-  const [theme, setTheme] = useState('system');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'system');
   const [systemIsDark, setSystemIsDark] = useState(false);
-  const [appLang, setAppLang] = useState('system');
+  const [appLang, setAppLang] = useState(() => localStorage.getItem('appLang') || 'system');
   const [isAppConfigModalOpen, setIsAppConfigModalOpen] = useState(false);
   const [alarmPermissionDenied, setAlarmPermissionDenied] = useState(false);
 
@@ -297,6 +304,16 @@ export default function App() {
     mq.addEventListener('change', listener);
     return () => mq.removeEventListener('change', listener);
   }, []);
+
+  // === 데이터 영구 저장 ===
+  useEffect(() => { localStorage.setItem('myCities', JSON.stringify(myCities)); }, [myCities]);
+  useEffect(() => { localStorage.setItem('baseCityId', baseCityId); }, [baseCityId]);
+  useEffect(() => { localStorage.setItem('savedLists', JSON.stringify(savedLists)); }, [savedLists]);
+  useEffect(() => { localStorage.setItem('alarms', JSON.stringify(alarms)); }, [alarms]);
+  useEffect(() => { localStorage.setItem('workHours', JSON.stringify(workHours)); }, [workHours]);
+  useEffect(() => { localStorage.setItem('meetingCriteria', meetingCriteria); }, [meetingCriteria]);
+  useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
+  useEffect(() => { localStorage.setItem('appLang', appLang); }, [appLang]);
 
   // === Google Play 인앱결제 초기화 ===
   useEffect(() => {
@@ -361,9 +378,13 @@ export default function App() {
   // === 세계 시계 상태 ===
   const [customBaseTime, setCustomBaseTime] = useState('');
   const [myCities, setMyCities] = useState(() => {
+    try {
+      const saved = localStorage.getItem('myCities');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
     return ALL_CITIES.filter(city => ['seoul', 'tokyo', 'newyork', 'london'].includes(city.id));
   });
-  const [baseCityId, setBaseCityId] = useState('seoul');
+  const [baseCityId, setBaseCityId] = useState(() => localStorage.getItem('baseCityId') || 'seoul');
   const [isAddingMode, setIsAddingMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -380,22 +401,36 @@ export default function App() {
 
   // === 회의 시간 및 업무 설정 상태 ===
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
-  const [workHours, setWorkHours] = useState({ start: 9, end: 18 });
-  const [meetingCriteria, setMeetingCriteria] = useState('flexible');
+  const [workHours, setWorkHours] = useState(() => {
+    try {
+      const saved = localStorage.getItem('workHours');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return { start: 9, end: 18 };
+  });
+  const [meetingCriteria, setMeetingCriteria] = useState(() => localStorage.getItem('meetingCriteria') || 'flexible');
 
   // === 저장 리스트 상태 ===
-  const [savedLists, setSavedLists] = useState([
-    { id: 'list-1', name: 'Global Team A', cityIds: ['seoul', 'newyork', 'london'], createdAt: Date.now() - 100000 }
-  ]);
+  const [savedLists, setSavedLists] = useState(() => {
+    try {
+      const saved = localStorage.getItem('savedLists');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return [];
+  });
   const [isSaveListModalOpen, setIsSaveListModalOpen] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [editingListId, setEditingListId] = useState(null);
   const [editingListName, setEditingListName] = useState('');
 
   // === 알람 상태 ===
-  const [alarms, setAlarms] = useState([
-    { id: '1', cityId: 'newyork', targetDatetimeLocal: getLocalDatetimeString(new Date(Date.now() + 86400000), 'America/New_York'), timestamp: Date.now() + 86400000, label: 'Meeting', soundId: 'radar', isEnabled: true }
-  ]);
+  const [alarms, setAlarms] = useState(() => {
+    try {
+      const saved = localStorage.getItem('alarms');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return [];
+  });
   const [isAlarmEditMode, setIsAlarmEditMode] = useState(false);
   const [isAddAlarmModalOpen, setIsAddAlarmModalOpen] = useState(false);
   const [isSoundSelectModalOpen, setIsSoundSelectModalOpen] = useState(false);
@@ -507,6 +542,18 @@ React.useEffect(() => {
     const idsToRemove = cityIdStr.split(',');
     if (idsToRemove.includes(baseCityId)) return;
     setMyCities(prev => prev.filter(c => !idsToRemove.includes(c.id)));
+  };
+
+  const handleRedeemCode = () => {
+    if (redeemInput.trim() === '214662') {
+      setIsPro(true);
+      localStorage.setItem('isPro', 'true');
+      setRedeemMessage('success');
+      setRedeemInput('');
+    } else {
+      setRedeemMessage('fail');
+    }
+    setTimeout(() => setRedeemMessage(null), 3000);
   };
 
   const handleBuyPro = async () => {
@@ -1271,6 +1318,33 @@ React.useEffect(() => {
                     </label>
                   </div>
                 </div>
+
+                {/* 리딤 코드 */}
+                <div className={`pt-4 border-t ${isDark ? 'border-slate-800' : 'border-gray-200'}`}>
+                  <label className={`block text-sm font-bold mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('redeemCode')}</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={redeemInput}
+                      onChange={(e) => setRedeemInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleRedeemCode()}
+                      placeholder={t('redeemPlaceholder')}
+                      className={`flex-1 px-3 py-2 rounded-xl border text-sm font-medium outline-none ${isDark ? 'bg-slate-800 border-slate-700 text-white placeholder-gray-600' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'}`}
+                    />
+                    <button
+                      onClick={handleRedeemCode}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl"
+                    >
+                      {t('redeemBtn')}
+                    </button>
+                  </div>
+                  {redeemMessage && (
+                    <p className={`text-xs font-bold mt-2 ${redeemMessage === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                      {redeemMessage === 'success' ? t('redeemSuccess') : t('redeemFail')}
+                    </p>
+                  )}
+                </div>
+
               </div>
             </div>
           </div>
