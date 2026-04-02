@@ -267,6 +267,36 @@ const formatCustomDateTimeDisplay = (dtStr, lang) => {
   } catch (e) { return dtStr; }
 };
 
+// === localStorage 초기값 로더 (컴포넌트 밖에서 정의 - 번들 순서 문제 방지) ===
+function loadMyCities() {
+  try {
+    const saved = localStorage.getItem('myCities');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return ALL_CITIES.filter(city => ['seoul', 'tokyo', 'newyork', 'london'].includes(city.id));
+}
+function loadSavedLists() {
+  try {
+    const saved = localStorage.getItem('savedLists');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return [];
+}
+function loadAlarms() {
+  try {
+    const saved = localStorage.getItem('alarms');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return [];
+}
+function loadWorkHours() {
+  try {
+    const saved = localStorage.getItem('workHours');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return { start: 9, end: 18 };
+}
+
 export default function App() {
   const [realTime, setRealTime] = useState(new Date());
   const [activeTab, setActiveTab] = useState('worldclock');
@@ -304,16 +334,6 @@ export default function App() {
     mq.addEventListener('change', listener);
     return () => mq.removeEventListener('change', listener);
   }, []);
-
-  // === 데이터 영구 저장 ===
-  useEffect(() => { localStorage.setItem('myCities', JSON.stringify(myCities)); }, [myCities]);
-  useEffect(() => { localStorage.setItem('baseCityId', baseCityId); }, [baseCityId]);
-  useEffect(() => { localStorage.setItem('savedLists', JSON.stringify(savedLists)); }, [savedLists]);
-  useEffect(() => { localStorage.setItem('alarms', JSON.stringify(alarms)); }, [alarms]);
-  useEffect(() => { localStorage.setItem('workHours', JSON.stringify(workHours)); }, [workHours]);
-  useEffect(() => { localStorage.setItem('meetingCriteria', meetingCriteria); }, [meetingCriteria]);
-  useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
-  useEffect(() => { localStorage.setItem('appLang', appLang); }, [appLang]);
 
   // === Google Play 인앱결제 초기화 ===
   useEffect(() => {
@@ -377,13 +397,7 @@ export default function App() {
 
   // === 세계 시계 상태 ===
   const [customBaseTime, setCustomBaseTime] = useState('');
-  const [myCities, setMyCities] = useState(() => {
-    try {
-      const saved = localStorage.getItem('myCities');
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return ALL_CITIES.filter(city => ['seoul', 'tokyo', 'newyork', 'london'].includes(city.id));
-  });
+  const [myCities, setMyCities] = useState(loadMyCities);
   const [baseCityId, setBaseCityId] = useState(() => localStorage.getItem('baseCityId') || 'seoul');
   const [isAddingMode, setIsAddingMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -401,36 +415,18 @@ export default function App() {
 
   // === 회의 시간 및 업무 설정 상태 ===
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
-  const [workHours, setWorkHours] = useState(() => {
-    try {
-      const saved = localStorage.getItem('workHours');
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return { start: 9, end: 18 };
-  });
+  const [workHours, setWorkHours] = useState(loadWorkHours);
   const [meetingCriteria, setMeetingCriteria] = useState(() => localStorage.getItem('meetingCriteria') || 'flexible');
 
   // === 저장 리스트 상태 ===
-  const [savedLists, setSavedLists] = useState(() => {
-    try {
-      const saved = localStorage.getItem('savedLists');
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return [];
-  });
+  const [savedLists, setSavedLists] = useState(loadSavedLists);
   const [isSaveListModalOpen, setIsSaveListModalOpen] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [editingListId, setEditingListId] = useState(null);
   const [editingListName, setEditingListName] = useState('');
 
   // === 알람 상태 ===
-  const [alarms, setAlarms] = useState(() => {
-    try {
-      const saved = localStorage.getItem('alarms');
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return [];
-  });
+  const [alarms, setAlarms] = useState(loadAlarms);
   const [isAlarmEditMode, setIsAlarmEditMode] = useState(false);
   const [isAddAlarmModalOpen, setIsAddAlarmModalOpen] = useState(false);
   const [isSoundSelectModalOpen, setIsSoundSelectModalOpen] = useState(false);
@@ -443,6 +439,16 @@ export default function App() {
   const [newAlarmSound, setNewAlarmSound] = useState('radar');
   const [draggedAlarmIdx, setDraggedAlarmIdx] = useState(null);
   const [alarmTouchY, setAlarmTouchY] = useState(0);
+
+  // === 데이터 영구 저장 (모든 state 선언 후 배치 - TDZ 방지) ===
+  useEffect(() => { localStorage.setItem('myCities', JSON.stringify(myCities)); }, [myCities]);
+  useEffect(() => { localStorage.setItem('baseCityId', baseCityId); }, [baseCityId]);
+  useEffect(() => { localStorage.setItem('savedLists', JSON.stringify(savedLists)); }, [savedLists]);
+  useEffect(() => { localStorage.setItem('alarms', JSON.stringify(alarms)); }, [alarms]);
+  useEffect(() => { localStorage.setItem('workHours', JSON.stringify(workHours)); }, [workHours]);
+  useEffect(() => { localStorage.setItem('meetingCriteria', meetingCriteria); }, [meetingCriteria]);
+  useEffect(() => { localStorage.setItem('theme', theme); }, [theme]);
+  useEffect(() => { localStorage.setItem('appLang', appLang); }, [appLang]);
 
   useEffect(() => {
     const timer = setInterval(() => setRealTime(new Date()), 1000);
