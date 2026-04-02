@@ -95,7 +95,7 @@ const UI = {
   proFeature3: { ko: '🔀 시간대 합치기 및 그리드 뷰', en: '🔀 Merge timezones & Grid view', ja: '🔀 タイムゾーン結合とグリッドビュー' },
   proFeature4: { ko: '👔 고급 회의 조건 및 프리미엄 사운드', en: '👔 Advanced meeting criteria & sounds', ja: '👔 高度な会議条件とプレミアムサウンド' },
   proFeature5: { ko: '🚫 거슬리는 하단 광고 제거', en: '🚫 Ad-free experience', ja: '🚫 広告なしの快適な体験' },
-  buyPro: { ko: '평생 소장 ($4.99)', en: 'Lifetime Access ($4.99)', ja: '永久アクセス ($4.99)' },
+  buyPro: { ko: '평생 소장', en: 'Lifetime Access', ja: '永久アクセス' },
   restore: { ko: '구매 내역 복원', en: 'Restore Purchase', ja: '購入の復元' },
   alreadyPro: { ko: 'Pro 버전 사용 중입니다 ✨', en: 'You are using Pro version ✨', ja: 'Proバージョンをご利用中です ✨' },
   unlockAll: { ko: '모든 프리미엄 기능 해제', en: 'Unlock all premium features', ja: 'すべてのプレミアム機能を解放' }
@@ -267,8 +267,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('worldclock');
 
   // === 유료 결제 (Pro) 상태 ===
-  const [isPro, setIsPro] = useState(false);
+  const [isPro, setIsPro] = useState(() => localStorage.getItem('isPro') === 'true');
   const [paywallReason, setPaywallReason] = useState(null);
+  const [proPrice, setProPrice] = useState(null);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   // === 앱 설정 상태 ===
   const [theme, setTheme] = useState('system');
@@ -289,11 +291,56 @@ export default function App() {
       }
     };
     requestNotificationPermission();
- const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
     setSystemIsDark(mq.matches);
     const listener = (e) => setSystemIsDark(e.matches);
     mq.addEventListener('change', listener);
     return () => mq.removeEventListener('change', listener);
+  }, []);
+
+  // === Google Play 인앱결제 초기화 ===
+  useEffect(() => {
+    const initStore = () => {
+      if (!window.CdvPurchase) return;
+      const { store, ProductType, Platform } = window.CdvPurchase;
+
+      store.register([{
+        id: 'pro_lifetime',
+        type: ProductType.NON_CONSUMABLE,
+        platform: Platform.GOOGLE_PLAY,
+      }]);
+
+      store.when()
+        .productUpdated((product) => {
+          if (product.id === 'pro_lifetime') {
+            const price = product.offers?.[0]?.pricingPhases?.[0]?.price;
+            if (price) setProPrice(price);
+          }
+        })
+        .approved((transaction) => {
+          transaction.finish();
+        })
+        .finished((transaction) => {
+          if (transaction.products?.some(p => p.id === 'pro_lifetime')) {
+            setIsPro(true);
+            localStorage.setItem('isPro', 'true');
+          }
+          setIsPurchasing(false);
+        });
+
+      store.error((e) => {
+        console.error('Store error:', e);
+        setIsPurchasing(false);
+      });
+
+      store.initialize([Platform.GOOGLE_PLAY]);
+    };
+
+    if (window.CdvPurchase) {
+      initStore();
+    } else {
+      document.addEventListener('deviceready', initStore, { once: true });
+    }
   }, []);
 
   const isDark = theme === 'dark' || (theme === 'system' && systemIsDark);
@@ -460,6 +507,36 @@ React.useEffect(() => {
     const idsToRemove = cityIdStr.split(',');
     if (idsToRemove.includes(baseCityId)) return;
     setMyCities(prev => prev.filter(c => !idsToRemove.includes(c.id)));
+  };
+
+  const handleBuyPro = async () => {
+    if (!window.CdvPurchase) return;
+    const { store, Platform } = window.CdvPurchase;
+    setIsPurchasing(true);
+    try {
+      const product = store.get('pro_lifetime', Platform.GOOGLE_PLAY);
+      const offer = product?.offers?.[0];
+      if (offer) {
+        await offer.order();
+      } else {
+        setIsPurchasing(false);
+      }
+    } catch (e) {
+      console.error('구매 오류:', e);
+      setIsPurchasing(false);
+    }
+  };
+
+  const handleRestorePurchases = async () => {
+    if (!window.CdvPurchase) return;
+    setIsPurchasing(true);
+    try {
+      await window.CdvPurchase.store.restorePurchases();
+    } catch (e) {
+      console.error('복원 오류:', e);
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   const handleAddCityClick = () => { if (!isPro && myCities.length >= 4) { setPaywallReason('city'); return; } setIsAddingMode(true); };
@@ -1305,10 +1382,20 @@ React.useEffect(() => {
                   ))}
                 </div>
                 
-                <button onClick={() => { setIsPro(true); setPaywallReason(null); }} className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-2xl font-black text-lg shadow-lg shadow-orange-500/30 transition-all transform hover:scale-[1.02] active:scale-95">
-                  {t('buyPro')}
+                <button
+                  onClick={handleBuyPro}
+                  disabled={isPurchasing}
+                  className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-2xl font-black text-lg shadow-lg shadow-orange-500/30 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:scale-100"
+                >
+                  {isPurchasing ? '...' : `${t('buyPro')} (${proPrice || (currentLang === 'ko' ? '₩3,300' : '$2.99')})`}
                 </button>
-                <button onClick={() => { setIsPro(true); setPaywallReason(null); }} className={`w-full mt-4 text-xs font-bold underline transition-colors ${isDark ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>{t('restore')}</button>
+                <button
+                  onClick={handleRestorePurchases}
+                  disabled={isPurchasing}
+                  className={`w-full mt-4 text-xs font-bold underline transition-colors ${isDark ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  {t('restore')}
+                </button>
               </div>
             </div>
           </div>
